@@ -16,6 +16,31 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
+.secao-btn{
+    width:100%;
+    margin-top:15px;
+    border:none;
+    background:#374151;
+    color:white;
+    padding:16px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:700;
+    text-align:left;
+    transition:.2s;
+}
+
+.secao-btn:hover{
+    background:#4b5563;
+}
+
+.secao-conteudo{
+    display:none;
+    margin-top:10px;
+    padding:10px;
+    background:#111827;
+    border-radius:15px;
+}
 #previewContent .poster{
     max-width:100%;
     width:900px;
@@ -270,23 +295,6 @@ textarea{
     background:#4b5563;
     color:white;
 }
-<div id="previewModal" style="
-display:none;
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.9);
-z-index:9999;
-overflow:auto;
-padding:20px;
-">
-
-<div style="text-align:right;margin-bottom:15px;">
-<button onclick="fecharPreview()" class="slot-btn">✕</button>
-</div>
-
-<div id="previewContent"></div>
-
-</div>
 </style>
 </head>
 <div id="previewModal" style="
@@ -357,16 +365,77 @@ padding:15px;
 <label>Conteúdo Extra</label>
 <textarea id="extraTexto"></textarea>
 
-<div id="primeiraInputs"></div>
-
 <datalist id="musicasSalvas"></datalist>
-<button class="add-btn" onclick="addMusica('primeiraInputs')">+ Música Primeira Parte</button>
 
-<div id="ofertaInputs"></div>
-<button class="add-btn" onclick="addMusica('ofertaInputs')">+ Música Oferta</button>
+<!-- PRIMEIRA PARTE -->
+<button class="secao-btn" onclick="toggleSecao('primeiraSecao')">
+PRIMEIRA PARTE
+</button>
 
-<div id="entregaInputs"></div>
-<button class="add-btn" onclick="addMusica('entregaInputs')">+ Música Entrega</button>
+<div class="secao-conteudo" id="primeiraSecao">
+    <div id="primeiraInputs"></div>
+
+    <button class="add-btn"
+    onclick="addMusica('primeiraInputs')">
+    + Música Primeira Parte
+    </button>
+</div>
+
+<!-- OFERTA -->
+<button class="secao-btn" onclick="toggleSecao('ofertaSecao')">
+OFERTA
+</button>
+
+<div class="secao-conteudo" id="ofertaSecao">
+    <div id="ofertaInputs"></div>
+
+    <button class="add-btn"
+    onclick="addMusica('ofertaInputs')">
+    + Música Oferta
+    </button>
+</div>
+
+<!-- ENTREGA -->
+<button class="secao-btn" onclick="toggleSecao('entregaSecao')">
+ENTREGA
+</button>
+
+<div class="secao-conteudo" id="entregaSecao">
+    <div id="entregaInputs"></div>
+
+    <button class="add-btn"
+    onclick="addMusica('entregaInputs')">
+    + Música Entrega
+    </button>
+</div>
+
+<!-- DISTRIBUIÇÃO DE CEIA -->
+<button class="secao-btn" onclick="toggleSecao('distribuicaoSecao')">
+DISTRIBUIÇÃO DE CEIA
+</button>
+
+<div class="secao-conteudo" id="distribuicaoSecao">
+    <div id="distribuicaoInputs"></div>
+
+    <button class="add-btn"
+    onclick="addMusica('distribuicaoInputs')">
+    + Música Distribuição
+    </button>
+</div>
+
+<!-- CEIA -->
+<button class="secao-btn" onclick="toggleSecao('ceiaSecao')">
+CEIA
+</button>
+
+<div class="secao-conteudo" id="ceiaSecao">
+    <div id="ceiaInputs"></div>
+
+    <button class="add-btn"
+    onclick="addMusica('ceiaInputs')">
+    + Música Ceia
+    </button>
+</div>
 
 <button class="add-btn" style="background:#7c3aed;margin-top:25px;" onclick="gerarCartaz()">
 GERAR CARTAZ
@@ -403,7 +472,11 @@ GERAR CARTAZ
 
 <div class="section-title">ENTREGA</div>
 <div id="posterEntrega"></div>
+<div class="section-title">DISTRIBUIÇÃO DE CEIA</div>
+<div id="posterDistribuicao"></div>
 
+<div class="section-title">CEIA</div>
+<div id="posterCeia"></div>
 <div class="extra">
 <div id="posterExtraTitulo"></div>
 <div id="posterExtraTexto"></div>
@@ -441,6 +514,8 @@ document.getElementById(secao).appendChild(div);
 addMusica('primeiraInputs');
 addMusica('ofertaInputs');
 addMusica('entregaInputs');
+addMusica('distribuicaoInputs');
+addMusica('ceiaInputs');
 
 function gerarCartaz(){
 
@@ -458,6 +533,8 @@ meses[hoje.getMonth()] + " " + hoje.getFullYear();
 gerarSecao("primeiraInputs","posterPrimeira");
 gerarSecao("ofertaInputs","posterOferta");
 gerarSecao("entregaInputs","posterEntrega");
+gerarSecao("distribuicaoInputs","posterDistribuicao");
+gerarSecao("ceiaInputs","posterCeia");
 
 document.getElementById("posterExtraTitulo").innerText =
 document.getElementById("extraTitulo").value || "EXTRA";
@@ -469,6 +546,22 @@ salvarRepertorioAtual();
 
 }
 
+function toggleSecao(id){
+
+    const secao =
+        document.getElementById(id);
+
+    if(secao.style.display === "block"){
+
+        secao.style.display = "none";
+
+    }else{
+
+        secao.style.display = "block";
+
+    }
+
+}
 function verCartaz(){
 
     atualizarPoster();
@@ -782,6 +875,8 @@ function carregarSlot(indice){
     carregarMusicas("entregaInputs", r.entrega);
 
     atualizarPoster();
+    carregarMusicas("distribuicaoInputs", r.distribuicao || []);
+carregarMusicas("ceiaInputs", r.ceia || []);
 }
 
 function atualizarPoster(){
