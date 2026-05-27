@@ -347,6 +347,8 @@ padding:15px;
     <button class="slot-btn" onclick="carregarSlot(1)">2</button>
     <button class="slot-btn" onclick="carregarSlot(2)">3</button>
     <button class="slot-btn" onclick="carregarSlot(3)">4</button>
+    <button class="slot-btn" onclick="carregarSlot(4)">5</button>
+
     <button class="slot-btn" onclick="verCartaz()">🔍</button>
 </div>
 <label>Grupo</label>
@@ -464,22 +466,34 @@ GERAR CARTAZ
 </div>
 </div>
 
-<div class="section-title">PRIMEIRA PARTE</div>
-<div id="posterPrimeira"></div>
+<div id="secaoPrimeira" style="display:none;">
+    <div class="section-title">PRIMEIRA PARTE</div>
+    <div id="posterPrimeira"></div>
+</div>
 
-<div class="section-title">OFERTA</div>
-<div id="posterOferta"></div>
+<div id="secaoOferta" style="display:none;">
+    <div class="section-title">OFERTA</div>
+    <div id="posterOferta"></div>
+</div>
 
-<div class="section-title">ENTREGA</div>
-<div id="posterEntrega"></div>
-<div class="section-title">DISTRIBUIÇÃO DE CEIA</div>
-<div id="posterDistribuicao"></div>
+<div id="secaoEntrega" style="display:none;">
+    <div class="section-title">ENTREGA</div>
+    <div id="posterEntrega"></div>
+</div>
 
-<div class="section-title">CEIA</div>
-<div id="posterCeia"></div>
-<div class="extra">
-<div id="posterExtraTitulo"></div>
-<div id="posterExtraTexto"></div>
+<div id="secaoDistribuicao" style="display:none;">
+    <div class="section-title">DISTRIBUIÇÃO DE CEIA</div>
+    <div id="posterDistribuicao"></div>
+</div>
+
+<div id="secaoCeia" style="display:none;">
+    <div class="section-title">CEIA</div>
+    <div id="posterCeia"></div>
+</div>
+
+<div class="extra" id="secaoExtra" style="display:none;">
+    <div id="posterExtraTitulo"></div>
+    <div id="posterExtraTexto"></div>
 </div>
 
 </div>
@@ -530,17 +544,52 @@ document.getElementById("dia").value || hoje.getDate();
 document.getElementById("posterData").innerText =
 meses[hoje.getMonth()] + " " + hoje.getFullYear();
 
-gerarSecao("primeiraInputs","posterPrimeira");
-gerarSecao("ofertaInputs","posterOferta");
-gerarSecao("entregaInputs","posterEntrega");
-gerarSecao("distribuicaoInputs","posterDistribuicao");
-gerarSecao("ceiaInputs","posterCeia");
+gerarSecao(
+    "primeiraInputs",
+    "posterPrimeira",
+    "secaoPrimeira"
+);
+
+gerarSecao(
+    "ofertaInputs",
+    "posterOferta",
+    "secaoOferta"
+);
+
+gerarSecao(
+    "entregaInputs",
+    "posterEntrega",
+    "secaoEntrega"
+);
+
+gerarSecao(
+    "distribuicaoInputs",
+    "posterDistribuicao",
+    "secaoDistribuicao"
+);
+
+gerarSecao(
+    "ceiaInputs",
+    "posterCeia",
+    "secaoCeia"
+);
+
+const extraTitulo =
+    document.getElementById("extraTitulo").value;
+
+const extraTexto =
+    document.getElementById("extraTexto").value;
 
 document.getElementById("posterExtraTitulo").innerText =
-document.getElementById("extraTitulo").value || "EXTRA";
+    extraTitulo;
 
 document.getElementById("posterExtraTexto").innerText =
-document.getElementById("extraTexto").value;
+    extraTexto;
+
+document.getElementById("secaoExtra").style.display =
+    (extraTitulo.trim() || extraTexto.trim())
+    ? "block"
+    : "none";
 
 salvarRepertorioAtual();
 
@@ -578,51 +627,71 @@ function fecharPreview(){
     document.getElementById("previewModal").style.display =
         "none";
 }
-function gerarSecao(inputId,posterId){
+function gerarSecao(inputId, posterId, secaoId){
 
-const inputs = document.querySelectorAll(`#${inputId} .music-block`);
+    const inputs =
+        document.querySelectorAll(`#${inputId} .music-block`);
 
-const poster = document.getElementById(posterId);
+    const poster =
+        document.getElementById(posterId);
 
-poster.innerHTML = "";
+    const secao =
+        document.getElementById(secaoId);
 
-inputs.forEach(item=>{
+    poster.innerHTML = "";
 
-const nome = item.querySelector(".nome").value;
-const autor = item.querySelector(".autor").value;
-const tom = item.querySelector(".tom").value;
-const link = item.querySelector(".youtubeLink").value;
+    let possuiMusica = false;
 
-if(nome){
-salvarMusica({
-    nome,
-    autor,
-    tom,
-    youtube: link
-});
-poster.innerHTML += `
-${link ? `
-<a class="song song-link" href="${link}" target="_blank">
-` : `
-<div class="song">
-`}
+    inputs.forEach(item => {
 
-<div class="song-name">${nome}</div>
-<div class="song-meta">${autor} • Tom ${tom}</div>
+        const nome =
+            item.querySelector(".nome").value;
 
-${link ? `
-<div class="yt-icon">
-▶
-</div>
-` : ""}
+        const autor =
+            item.querySelector(".autor").value;
 
-${link ? `</a>` : `</div>`}
-`;
+        const tom =
+            item.querySelector(".tom").value;
 
-}
+        const link =
+            item.querySelector(".youtubeLink").value;
 
-});
+        if(nome.trim() !== ""){
 
+            possuiMusica = true;
+
+            salvarMusica({
+                nome,
+                autor,
+                tom,
+                youtube: link
+            });
+
+            poster.innerHTML += `
+            ${link ? `
+            <a class="song song-link" href="${link}" target="_blank">
+            ` : `
+            <div class="song">
+            `}
+
+            <div class="song-name">${nome}</div>
+
+            <div class="song-meta">
+                ${autor} • Tom ${tom}
+            </div>
+
+            ${link ? `
+            <div class="yt-icon">▶</div>
+            ` : ""}
+
+            ${link ? `</a>` : `</div>`}
+            `;
+        }
+
+    });
+
+    secao.style.display =
+        possuiMusica ? "block" : "none";
 }
 
 function baixarPNG(){
@@ -815,24 +884,26 @@ function salvarSlots(lista){
 function salvarRepertorioAtual(){
 
     const repertorio = {
-        grupo: document.getElementById("grupo").value,
-        dia: document.getElementById("dia").value,
-        extraTitulo: document.getElementById("extraTitulo").value,
-        extraTexto: document.getElementById("extraTexto").value,
+    grupo: document.getElementById("grupo").value,
+    dia: document.getElementById("dia").value,
+    extraTitulo: document.getElementById("extraTitulo").value,
+    extraTexto: document.getElementById("extraTexto").value,
 
-        primeira: coletarMusicas("primeiraInputs"),
-        oferta: coletarMusicas("ofertaInputs"),
-        entrega: coletarMusicas("entregaInputs")
-    };
+    primeira: coletarMusicas("primeiraInputs"),
+    oferta: coletarMusicas("ofertaInputs"),
+    entrega: coletarMusicas("entregaInputs"),
+    distribuicao: coletarMusicas("distribuicaoInputs"),
+    ceia: coletarMusicas("ceiaInputs")
+};
 
     let slots = pegarSlots();
 
     slots.push(repertorio);
 
-    // mantém apenas os últimos 4
-    if(slots.length > 4){
-        slots.shift();
-    }
+    // mantém apenas os últimos 5
+if(slots.length > 5){
+    slots.shift();
+}
 
     salvarSlots(slots);
 }
@@ -871,12 +942,12 @@ function carregarSlot(indice){
     document.getElementById("extraTexto").value = r.extraTexto;
 
     carregarMusicas("primeiraInputs", r.primeira);
-    carregarMusicas("ofertaInputs", r.oferta);
-    carregarMusicas("entregaInputs", r.entrega);
-
-    atualizarPoster();
-    carregarMusicas("distribuicaoInputs", r.distribuicao || []);
+carregarMusicas("ofertaInputs", r.oferta);
+carregarMusicas("entregaInputs", r.entrega);
+carregarMusicas("distribuicaoInputs", r.distribuicao || []);
 carregarMusicas("ceiaInputs", r.ceia || []);
+
+gerarCartaz();
 }
 
 function atualizarPoster(){
