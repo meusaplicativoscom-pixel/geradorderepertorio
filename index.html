@@ -90,7 +90,7 @@
     min-height:1300px;
     background:radial-gradient(circle at top,#1e3a8a,#0f172a 60%);
     border-radius:30px;
-    overflow:visible; /* <- MUITO IMPORTANTE */
+    overflow:hidden; /* <- MUITO IMPORTANTE */
 }
 
 *{
@@ -194,7 +194,7 @@ textarea{
     min-height:1300px;
     background:radial-gradient(circle at top,#1e3a8a,#0f172a 60%);
     border-radius:30px;
-    overflow:visible;
+    overflow:hidden;
 }
 
 .poster-content{
@@ -444,8 +444,8 @@ GERAR CARTAZ
 </button>
 
 <div class="downloads">
-<button class="png" onclick="baixarPNG()">PNG</button>
-<button class="pdf" onclick="baixarPDF()">PDF</button>
+<button class="png" onclick="compartilharPNG()">Compartilhar PNG</button>
+<button class="pdf" onclick="compartilharPDF()">Compartilhar PDF</button>
 </div>
 
 </div>
@@ -611,12 +611,23 @@ function toggleSecao(id){
     }
 
 }
+
 function verCartaz(){
 
     atualizarPoster();
 
-    document.getElementById("previewContent").innerHTML =
-        document.getElementById("poster").outerHTML;
+    const original =
+        document.getElementById("poster");
+
+    const clone =
+        original.cloneNode(true);
+
+    clone.id = "posterPreview";
+
+    document.getElementById("previewContent").innerHTML = "";
+
+    document.getElementById("previewContent")
+        .appendChild(clone);
 
     document.getElementById("previewModal").style.display =
         "block";
@@ -694,38 +705,88 @@ function gerarSecao(inputId, posterId, secaoId){
         possuiMusica ? "block" : "none";
 }
 
-function baixarPNG(){
+async function compartilharPNG(){
 
     const grupo = document.getElementById("grupo").value;
-
     const dia = document.getElementById("dia").value || new Date().getDate();
-
     const nomeArquivo = `${grupo} repertorio dia ${dia}.png`;
 
-    const element = document.getElementById("poster");
-
-    html2canvas(element, {
-
+    const element =
+    document.querySelector(".poster-area #poster");
+    const canvas = await html2canvas(element, {
         scale: 3,
-
         useCORS: true,
-
         backgroundColor: null
-
-    }).then(canvas => {
-
-        const link = document.createElement("a");
-
-        link.download = nomeArquivo;
-
-        link.href = canvas.toDataURL("image/png");
-
-        link.click();
-
     });
 
-}
+    canvas.toBlob(async (blob) => {
 
+        const file = new File([blob], nomeArquivo, { type: "image/png" });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+
+            await navigator.share({
+                title: "Repertório",
+                text: "Confira o repertório",
+                files: [file]
+            });
+
+        } else {
+
+            const link = document.createElement("a");
+            link.download = nomeArquivo;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+        }
+
+    }, "image/png");
+}
+async function compartilharPDF() {
+
+    const grupo = document.getElementById("grupo").value;
+    const dia = document.getElementById("dia").value || new Date().getDate();
+    const nomeArquivo = `${grupo} repertorio dia ${dia}.pdf`;
+
+    const element =
+    document.querySelector(".poster-area #poster");
+
+    const opt = {
+        margin: 0,
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: {
+            scale: 3,
+            useCORS: true,
+            scrollY: 0,
+            windowWidth: element.scrollWidth,
+            windowHeight: element.scrollHeight
+        },
+        jsPDF: {
+            unit: 'px',
+            format: [900, element.scrollHeight],
+            orientation: 'portrait'
+        }
+    };
+
+    const worker = html2pdf().set(opt).from(element).toPdf();
+
+    const pdf = await worker.get("pdf");
+    const blob = pdf.output("blob");
+
+    const file = new File([blob], nomeArquivo, { type: "application/pdf" });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+
+        await navigator.share({
+            title: "Repertório",
+            text: "Confira o repertório em PDF",
+            files: [file]
+        });
+
+    } else {
+
+        pdf.save(nomeArquivo);
+    }
+}
 function baixarPDF(){
 
     const grupo = document.getElementById("grupo").value;
@@ -952,27 +1013,60 @@ gerarCartaz();
 
 function atualizarPoster(){
 
-const hoje = new Date();
+    const hoje = new Date();
 
-document.getElementById("posterGrupo").innerText =
-document.getElementById("grupo").value;
+    document.getElementById("posterGrupo").innerText =
+        document.getElementById("grupo").value;
 
-document.getElementById("posterDia").innerText =
-document.getElementById("dia").value || hoje.getDate();
+    document.getElementById("posterDia").innerText =
+        document.getElementById("dia").value || hoje.getDate();
 
-document.getElementById("posterData").innerText =
-meses[hoje.getMonth()] + " " + hoje.getFullYear();
+    document.getElementById("posterData").innerText =
+        meses[hoje.getMonth()] + " " + hoje.getFullYear();
 
-gerarSecao("primeiraInputs","posterPrimeira");
-gerarSecao("ofertaInputs","posterOferta");
-gerarSecao("entregaInputs","posterEntrega");
+    gerarSecao(
+        "primeiraInputs",
+        "posterPrimeira",
+        "secaoPrimeira"
+    );
 
-document.getElementById("posterExtraTitulo").innerText =
-document.getElementById("extraTitulo").value || "EXTRA";
+    gerarSecao(
+        "ofertaInputs",
+        "posterOferta",
+        "secaoOferta"
+    );
 
-document.getElementById("posterExtraTexto").innerText =
-document.getElementById("extraTexto").value;
+    gerarSecao(
+        "entregaInputs",
+        "posterEntrega",
+        "secaoEntrega"
+    );
 
+    gerarSecao(
+        "distribuicaoInputs",
+        "posterDistribuicao",
+        "secaoDistribuicao"
+    );
+
+    gerarSecao(
+        "ceiaInputs",
+        "posterCeia",
+        "secaoCeia"
+    );
+
+    document.getElementById("posterExtraTitulo").innerText =
+        document.getElementById("extraTitulo").value || "EXTRA";
+
+    document.getElementById("posterExtraTexto").innerText =
+        document.getElementById("extraTexto").value;
+
+    document.getElementById("secaoExtra").style.display =
+        (
+            document.getElementById("extraTitulo").value.trim() ||
+            document.getElementById("extraTexto").value.trim()
+        )
+        ? "block"
+        : "none";
 }
 function carregarMusicas(secao, lista){
 
@@ -1004,66 +1098,6 @@ function carregarMusicas(secao, lista){
 
 }
 
-function verCartaz(){
-
-    gerarCartaz();
-
-    document.getElementById("previewContent").innerHTML =
-        document.getElementById("poster").outerHTML;
-
-    document.getElementById("previewModal").style.display =
-        "block";
-}
-
-function fecharPreview(){
-
-    document.getElementById("previewModal").style.display =
-        "none";
-}
-function verCartaz(){
-
-    atualizarPoster();
-
-    const estilos =
-        document.querySelector("style").innerHTML;
-
-    const conteudo =
-        document.getElementById("poster").outerHTML;
-
-    const janela = window.open("", "_blank");
-
-    janela.document.write(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-
-        <style>
-        ${estilos}
-
-        body{
-            margin:0;
-            padding:20px;
-            background:#0f172a;
-            display:flex;
-            justify-content:center;
-            align-items:flex-start;
-        }
-        </style>
-
-    </head>
-
-    <body>
-
-        ${conteudo}
-
-    </body>
-    </html>
-    `);
-
-    janela.document.close();
-
-}
 </script>
 <button id="btnInstall" style="display:none;">📲 Instalar App</button>
 <script>
