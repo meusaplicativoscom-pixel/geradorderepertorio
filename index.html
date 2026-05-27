@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -15,6 +16,31 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
+#previewContent .poster{
+    max-width:100%;
+    width:900px;
+}
+
+@media(max-width:900px){
+
+    #previewContent .poster{
+        width:100%;
+        min-height:auto;
+    }
+
+    #previewContent .poster-content{
+        padding:20px;
+    }
+
+    #previewContent .date-day{
+        font-size:48px;
+    }
+
+    #previewContent .logo{
+        font-size:36px;
+    }
+
+}
 .yt-icon{
     display:inline-flex;
     width:22px;
@@ -228,9 +254,78 @@ textarea{
     transform:scale(1.01);
     background:rgba(255,255,255,.08);
 }
+.slot-btn{
+    width:35px;
+    height:35px;
+    border:none;
+    border-radius:8px;
+    background:#374151;
+    color:#9ca3af;
+    cursor:pointer;
+    font-size:12px;
+    transition:.2s;
+}
+
+.slot-btn:hover{
+    background:#4b5563;
+    color:white;
+}
+<div id="previewModal" style="
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.9);
+z-index:9999;
+overflow:auto;
+padding:20px;
+">
+
+<div style="text-align:right;margin-bottom:15px;">
+<button onclick="fecharPreview()" class="slot-btn">✕</button>
+</div>
+
+<div id="previewContent"></div>
+
+</div>
 </style>
 </head>
+<div id="previewModal" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#000;
+z-index:99999;
+overflow:auto;
+">
 
+<div style="
+position:sticky;
+top:0;
+padding:10px;
+background:#111827;
+text-align:right;
+">
+
+<button class="slot-btn" onclick="fecharPreview()">
+✕
+</button>
+
+</div>
+
+<div style="
+display:flex;
+justify-content:center;
+padding:15px;
+">
+
+<div id="previewContent"></div>
+
+</div>
+
+</div>
 <body>
 
 <div class="container">
@@ -239,7 +334,13 @@ textarea{
 <div class="panel">
 
 <h2>GERADOR DE REPERTÓRIO</h2>
-
+<div style="display:flex;gap:6px;margin-top:15px;">
+    <button class="slot-btn" onclick="carregarSlot(0)">1</button>
+    <button class="slot-btn" onclick="carregarSlot(1)">2</button>
+    <button class="slot-btn" onclick="carregarSlot(2)">3</button>
+    <button class="slot-btn" onclick="carregarSlot(3)">4</button>
+    <button class="slot-btn" onclick="verCartaz()">🔍</button>
+</div>
 <label>Grupo</label>
 <select id="grupo">
 <option>G1</option>
@@ -364,8 +465,26 @@ document.getElementById("extraTitulo").value || "EXTRA";
 document.getElementById("posterExtraTexto").innerText =
 document.getElementById("extraTexto").value;
 
+salvarRepertorioAtual();
+
 }
 
+function verCartaz(){
+
+    atualizarPoster();
+
+    document.getElementById("previewContent").innerHTML =
+        document.getElementById("poster").outerHTML;
+
+    document.getElementById("previewModal").style.display =
+        "block";
+}
+
+function fecharPreview(){
+
+    document.getElementById("previewModal").style.display =
+        "none";
+}
 function gerarSecao(inputId,posterId){
 
 const inputs = document.querySelectorAll(`#${inputId} .music-block`);
@@ -583,6 +702,202 @@ document.addEventListener("input", function(e){
 // ==========================
 
 atualizarDatalist();
+// ======================
+// REPERTÓRIOS AUTOMÁTICOS
+// ======================
+
+function pegarSlots(){
+    return JSON.parse(
+        localStorage.getItem("repertoriosSalvos")
+    ) || [];
+}
+
+function salvarSlots(lista){
+    localStorage.setItem(
+        "repertoriosSalvos",
+        JSON.stringify(lista)
+    );
+}
+
+function salvarRepertorioAtual(){
+
+    const repertorio = {
+        grupo: document.getElementById("grupo").value,
+        dia: document.getElementById("dia").value,
+        extraTitulo: document.getElementById("extraTitulo").value,
+        extraTexto: document.getElementById("extraTexto").value,
+
+        primeira: coletarMusicas("primeiraInputs"),
+        oferta: coletarMusicas("ofertaInputs"),
+        entrega: coletarMusicas("entregaInputs")
+    };
+
+    let slots = pegarSlots();
+
+    slots.push(repertorio);
+
+    // mantém apenas os últimos 4
+    if(slots.length > 4){
+        slots.shift();
+    }
+
+    salvarSlots(slots);
+}
+console.log("Salvou repertório");
+function coletarMusicas(secao){
+
+    const lista = [];
+
+    document
+    .querySelectorAll(`#${secao} .music-block`)
+    .forEach(item => {
+
+        lista.push({
+            nome: item.querySelector(".nome").value,
+            autor: item.querySelector(".autor").value,
+            tom: item.querySelector(".tom").value,
+            youtube: item.querySelector(".youtubeLink").value
+        });
+
+    });
+
+    return lista;
+}
+
+function carregarSlot(indice){
+
+    const slots = pegarSlots();
+
+    if(!slots[indice]) return;
+
+    const r = slots[indice];
+
+    document.getElementById("grupo").value = r.grupo;
+    document.getElementById("dia").value = r.dia;
+    document.getElementById("extraTitulo").value = r.extraTitulo;
+    document.getElementById("extraTexto").value = r.extraTexto;
+
+    carregarMusicas("primeiraInputs", r.primeira);
+    carregarMusicas("ofertaInputs", r.oferta);
+    carregarMusicas("entregaInputs", r.entrega);
+
+    atualizarPoster();
+}
+
+function atualizarPoster(){
+
+const hoje = new Date();
+
+document.getElementById("posterGrupo").innerText =
+document.getElementById("grupo").value;
+
+document.getElementById("posterDia").innerText =
+document.getElementById("dia").value || hoje.getDate();
+
+document.getElementById("posterData").innerText =
+meses[hoje.getMonth()] + " " + hoje.getFullYear();
+
+gerarSecao("primeiraInputs","posterPrimeira");
+gerarSecao("ofertaInputs","posterOferta");
+gerarSecao("entregaInputs","posterEntrega");
+
+document.getElementById("posterExtraTitulo").innerText =
+document.getElementById("extraTitulo").value || "EXTRA";
+
+document.getElementById("posterExtraTexto").innerText =
+document.getElementById("extraTexto").value;
+
+}
+function carregarMusicas(secao, lista){
+
+    const container =
+        document.getElementById(secao);
+
+    container.innerHTML = "";
+
+    lista.forEach(m => {
+
+        addMusica(secao);
+
+        const ultimo =
+            container.lastElementChild;
+
+        ultimo.querySelector(".nome").value =
+            m.nome || "";
+
+        ultimo.querySelector(".autor").value =
+            m.autor || "";
+
+        ultimo.querySelector(".tom").value =
+            m.tom || "";
+
+        ultimo.querySelector(".youtubeLink").value =
+            m.youtube || "";
+
+    });
+
+}
+
+function verCartaz(){
+
+    gerarCartaz();
+
+    document.getElementById("previewContent").innerHTML =
+        document.getElementById("poster").outerHTML;
+
+    document.getElementById("previewModal").style.display =
+        "block";
+}
+
+function fecharPreview(){
+
+    document.getElementById("previewModal").style.display =
+        "none";
+}
+function verCartaz(){
+
+    atualizarPoster();
+
+    const estilos =
+        document.querySelector("style").innerHTML;
+
+    const conteudo =
+        document.getElementById("poster").outerHTML;
+
+    const janela = window.open("", "_blank");
+
+    janela.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+
+        <style>
+        ${estilos}
+
+        body{
+            margin:0;
+            padding:20px;
+            background:#0f172a;
+            display:flex;
+            justify-content:center;
+            align-items:flex-start;
+        }
+        </style>
+
+    </head>
+
+    <body>
+
+        ${conteudo}
+
+    </body>
+    </html>
+    `);
+
+    janela.document.close();
+
+}
 </script>
 <button id="btnInstall" style="display:none;">📲 Instalar App</button>
 <script>
