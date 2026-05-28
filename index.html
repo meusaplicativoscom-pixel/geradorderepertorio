@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -453,6 +454,7 @@ padding:15px;
     <button class="slot-btn" onclick="carregarSlot(4)">5</button>
 
     <button class="slot-btn" onclick="verCartaz()">🔍</button>
+    <button class="slot-btn" onclick="abrirSite()">V</button>
 </div>
 <label>Grupo</label>
 <select id="grupo">
@@ -677,6 +679,11 @@ async function baixarPNG(){
     }, "image/png");
 
 }
+
+function abrirSite(){
+    window.open("https://sites.google.com/view/meusappsmp/in%C3%ADcio", "_blank");
+}
+
 function gerarCartaz(){
 
 const hoje = new Date();
