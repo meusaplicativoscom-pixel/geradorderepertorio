@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -295,6 +294,77 @@ textarea{
     background:#4b5563;
     color:white;
 }
+/* BOTÕES FLUTUANTES */
+
+.floating-buttons{
+    position:fixed;
+    right:15px;
+    bottom:15px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    z-index:9999;
+}
+
+.float-btn{
+    width:42px;
+    height:42px;
+    border:none;
+    border-radius:50%;
+    background:rgba(255,255,255,.08);
+    backdrop-filter:blur(10px);
+    color:white;
+    cursor:pointer;
+    font-weight:700;
+    font-size:14px;
+    transition:.2s;
+    box-shadow:0 4px 10px rgba(0,0,0,.25);
+}
+
+.float-btn:hover{
+    transform:scale(1.08);
+    background:rgba(255,255,255,.16);
+}
+
+/* MODAL QR */
+
+.qr-modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.8);
+    z-index:99999;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.qr-box{
+    position:relative;
+    background:#111827;
+    padding:15px;
+    border-radius:20px;
+}
+
+.qr-box img{
+    width:280px;
+    max-width:100%;
+    border-radius:12px;
+}
+
+.fechar-qr{
+    position:absolute;
+    top:-10px;
+    right:-10px;
+    width:35px;
+    height:35px;
+    border:none;
+    border-radius:50%;
+    background:#dc2626;
+    color:white;
+    cursor:pointer;
+    font-weight:700;
+}
 </style>
 </head>
 <div id="previewModal" style="
@@ -334,6 +404,38 @@ padding:15px;
 </div>
 
 </div>
+<!-- BOTÕES FLUTUANTES -->
+<div class="floating-buttons">
+
+    <!-- QR CODE -->
+    <button class="float-btn" onclick="abrirQR()" title="QR Code">
+        QR
+    </button>
+
+    <!-- COMPARTILHAR -->
+    <button class="float-btn" onclick="compartilharSite()" title="Compartilhar">
+        ↗
+    </button>
+
+</div>
+
+<!-- MODAL QR -->
+<div id="qrModal" class="qr-modal">
+
+    <div class="qr-box">
+
+        <button class="fechar-qr" onclick="fecharQR()">
+            ✕
+        </button>
+
+        <img
+            src="https://i.imgur.com/odKarCz.jpeg"
+            alt="QR Code"
+        >
+
+    </div>
+
+</div>
 <body>
 
 <div class="container">
@@ -343,13 +445,15 @@ padding:15px;
 
 <h2>GERADOR DE REPERTÓRIO</h2>
 <div style="display:flex;gap:6px;margin-top:15px;">
+    
     <button class="slot-btn" onclick="carregarSlot(0)">1</button>
     <button class="slot-btn" onclick="carregarSlot(1)">2</button>
     <button class="slot-btn" onclick="carregarSlot(2)">3</button>
     <button class="slot-btn" onclick="carregarSlot(3)">4</button>
     <button class="slot-btn" onclick="carregarSlot(4)">5</button>
-
     <button class="slot-btn" onclick="verCartaz()">🔍</button>
+
+    <button class="slot-btn" onclick="abrirSite()">V</button>
 </div>
 <label>Grupo</label>
 <select id="grupo">
@@ -443,9 +547,24 @@ CEIA
 GERAR CARTAZ
 </button>
 
-<div class="downloads">
-<button class="png" onclick="compartilharPNG()">Compartilhar PNG</button>
-<button class="pdf" onclick="compartilharPDF()">Compartilhar PDF</button>
+<div class="downloads" style="flex-wrap:wrap;">
+    
+    <button class="png" onclick="compartilharPNG()">
+        Compartilhar PNG
+    </button>
+
+    <button class="png" onclick="baixarPNG()">
+        Baixar PNG
+    </button>
+
+    <button class="pdf" onclick="compartilharPDF()">
+        Compartilhar PDF
+    </button>
+
+    <button class="pdf" onclick="baixarPDF()">
+        Baixar PDF
+    </button>
+
 </div>
 
 </div>
@@ -531,6 +650,34 @@ addMusica('entregaInputs');
 addMusica('distribuicaoInputs');
 addMusica('ceiaInputs');
 
+async function baixarPNG(){
+
+    const grupo = document.getElementById("grupo").value;
+    const dia = document.getElementById("dia").value || new Date().getDate();
+
+    const nomeArquivo = `${grupo} repertorio dia ${dia}.png`;
+
+    const element =
+        document.querySelector(".poster-area #poster");
+
+    const canvas = await html2canvas(element, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: null
+    });
+
+    canvas.toBlob((blob) => {
+
+        const link = document.createElement("a");
+
+        link.download = nomeArquivo;
+        link.href = URL.createObjectURL(blob);
+
+        link.click();
+
+    }, "image/png");
+
+}
 function gerarCartaz(){
 
 const hoje = new Date();
@@ -637,6 +784,47 @@ function fecharPreview(){
 
     document.getElementById("previewModal").style.display =
         "none";
+}
+
+function abrirQR(){
+
+    document.getElementById("qrModal").style.display =
+        "flex";
+
+}
+
+function fecharQR(){
+
+    document.getElementById("qrModal").style.display =
+        "none";
+
+}
+
+async function compartilharSite(){
+
+    const url =
+        "https://meusaplicativoscom-pixel.github.io/geradorderepertorio/";
+
+    if(navigator.share){
+
+        try{
+
+            await navigator.share({
+                title:"Gerador de Repertório",
+                text:"Confira o aplicativo",
+                url:url
+            });
+
+        }catch(e){}
+
+    }else{
+
+        navigator.clipboard.writeText(url);
+
+        alert("Link copiado!");
+
+    }
+
 }
 function gerarSecao(inputId, posterId, secaoId){
 
@@ -1096,6 +1284,9 @@ function carregarMusicas(secao, lista){
 
     });
 
+}
+function abrirSite(){
+    window.open("https://sites.google.com/view/meusappsmp/in%C3%ADcio", "_blank");
 }
 
 </script>
