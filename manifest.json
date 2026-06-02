@@ -1,6 +1,6 @@
 {
-  "name": "Meu Site App",
-  "short_name": "SiteApp",
+  "name": "Repertorio",
+  "short_name": "Repertorio",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
