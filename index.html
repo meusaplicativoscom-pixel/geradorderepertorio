@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -504,6 +502,22 @@ padding:15px;
 <textarea id="extraTexto"></textarea>
 
 <datalist id="musicasSalvas"></datalist>
+
+<label>Importar Repertório</label>
+
+<textarea
+id="textoImportacao"
+placeholder="Cole aqui a mensagem completa do repertório">
+</textarea>
+
+<button
+class="add-btn"
+style="background:#16a34a"
+onclick="importarRepertorio()">
+
+📥 Preencher Automaticamente
+
+</button>
 
 <!-- PRIMEIRA PARTE -->
 <button class="secao-btn" onclick="toggleSecao('primeiraSecao')">
@@ -1621,6 +1635,125 @@ function trocarTema(){
 }
 
 window.addEventListener("load", aplicarTema);  
+
+function importarRepertorio(){
+
+    const texto =
+        document.getElementById("textoImportacao").value;
+
+    if(!texto.trim()){
+        alert("Cole o repertório primeiro");
+        return;
+    }
+
+    document.getElementById("primeiraInputs").innerHTML="";
+    document.getElementById("ofertaInputs").innerHTML="";
+    document.getElementById("entregaInputs").innerHTML="";
+    document.getElementById("distribuicaoInputs").innerHTML="";
+    document.getElementById("ceiaInputs").innerHTML="";
+
+    const linhas =
+        texto.split("\n")
+        .map(l => l.trim())
+        .filter(l => l);
+
+    let secaoAtual = "primeiraInputs";
+
+    for(let i=0;i<linhas.length;i++){
+
+        const linha = linhas[i];
+
+        const textoLinha = linha.toLowerCase();
+
+if(
+    textoLinha.includes("dízimos") ||
+    textoLinha.includes("ofertas")
+){
+    secaoAtual = "ofertaInputs";
+    continue;
+}
+
+if(
+    textoLinha.includes("entrega")
+){
+    secaoAtual = "entregaInputs";
+    continue;
+}
+
+if(
+    textoLinha.includes("distribuição") ||
+    textoLinha.includes("distribuicao")
+){
+    secaoAtual = "distribuicaoInputs";
+    continue;
+}
+
+if(
+    textoLinha.includes("ceia")
+){
+    secaoAtual = "ceiaInputs";
+    continue;
+}
+
+if(
+    textoLinha.includes("aviso") ||
+    textoLinha.includes("avisos")
+){
+    continue;
+}
+
+        const match =
+            linha.match(
+                /(.*?)\s*[-–]\s*Tom\s*\((.*?)\)/i
+            );
+
+        if(match){
+
+            const nome =
+                match[1]
+                .replace("📌","")
+                .trim();
+
+            const tom =
+                match[2].trim();
+
+            let youtube = "";
+
+            if(
+                linhas[i+1] &&
+                linhas[i+1].includes("youtu")
+            ){
+                youtube = linhas[i+1];
+            }
+
+            addMusica(secaoAtual);
+
+            const bloco =
+                document
+                .getElementById(secaoAtual)
+                .lastElementChild;
+
+            bloco.querySelector(".nome").value =
+                nome;
+
+            bloco.querySelector(".tom").value =
+                tom;
+
+            bloco.querySelector(".youtubeLink").value =
+                youtube;
+        }
+    }
+
+    const data =
+        texto.match(/(\d{2})\/(\d{2})/);
+
+    if(data){
+        document.getElementById("dia").value =
+            data[1];
+    }
+
+    gerarCartaz();
+}
 </script>
 
 </body>
