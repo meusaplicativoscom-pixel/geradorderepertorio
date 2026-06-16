@@ -1,4 +1,25 @@
 
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>R IVV</title>
+<style>
+body{
+  background:#f0f0f0;
+  text-align:center;
+}
+h1{
+  color:blue;
+}
+  
+</style>
+</head>
+<body>
+
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -408,7 +429,9 @@ padding:15px;
 </div>
 <!-- BOTÕES FLUTUANTES -->
 <div class="floating-buttons">
-
+<button class="float-btn" onclick="trocarTema()" title="Mudar Cor">
+🎨
+</button>
     <!-- QR CODE -->
     <button class="float-btn" onclick="abrirQR()" title="QR Code">
         QR
@@ -458,11 +481,18 @@ padding:15px;
     <button class="slot-btn" onclick="abrirSite()">V</button>
 </div>
 <label>Grupo</label>
-<select id="grupo">
-<option>G1</option>
-<option>G2</option>
-<option>G3</option>
-</select>
+<input
+    type="text"
+    id="grupo"
+    list="listaGrupos"
+    placeholder="Digite o grupo">
+
+<datalist id="listaGrupos">
+    <option value="G1">
+    <option value="G2">
+    <option value="G3">
+    <option value="Extra">
+</datalist>
 
 <label>Dia</label>
 <input type="number" id="dia" placeholder="26">
@@ -1530,3 +1560,69 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
+
+
+<script>
+console.log("Funcionando!");
+const temas = [
+{
+    fundo:"#0f172a",
+    topo:"#1e3a8a"
+},
+{
+    fundo:"#1e1b4b",
+    topo:"#7c3aed"
+},
+{
+    fundo:"#052e16",
+    topo:"#16a34a"
+},
+{
+    fundo:"#450a0a",
+    topo:"#dc2626"
+},
+{
+    fundo:"#78350f",
+    topo:"#f59e0b"
+},
+{
+    fundo:"#831843",
+    topo:"#ec4899"
+}
+];
+
+let temaAtual =
+parseInt(localStorage.getItem("temaCartaz")) || 0;
+
+function aplicarTema(){
+
+    const tema = temas[temaAtual];
+
+    document.getElementById("poster").style.background =
+        `radial-gradient(circle at top,
+        ${tema.topo},
+        ${tema.fundo} 60%)`;
+
+    localStorage.setItem(
+        "temaCartaz",
+        temaAtual
+    );
+}
+
+function trocarTema(){
+
+    temaAtual++;
+
+    if(temaAtual >= temas.length){
+        temaAtual = 0;
+    }
+
+    aplicarTema();
+}
+
+window.addEventListener("load", aplicarTema);  
+</script>
+
+</body>
+</html>
+  
